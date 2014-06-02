@@ -10,8 +10,12 @@ import java.util.List;
 
 
 public class FolderScanner implements Runnable{
-	//SimpleEntry<String, PostingFileElement> posting_file = new SimpleEntry<>(null);
-	List <PostingFileElement> postingFile = new ArrayList<>();
+
+	
+	/*->(update after files change)->*/ List <PostingFileElement> postingFile = new ArrayList<>();
+	/*->(parse)->*/ List <LocationOrderElement> LocationOrder = new ArrayList<>();
+	/*->(sort)->*/ List <AlphabeticOrderElement> AlphabeticOrder = new ArrayList<>();
+	/*->(weight)->*/ List <DB> db = new ArrayList<>();
 
 	//List<String> filesPathList= new ArrayList<>();
 	//List<String,String> words= new ArrayList<>();
@@ -32,16 +36,16 @@ public class FolderScanner implements Runnable{
 			for (File file : listOfFiles) {
 			    if (file.isFile()) {
 			    	
-			    	// if its the first file we index
+			    	// if it's the first file we index
 			    	if (postingFile.isEmpty()){
 			    		postingFile.add(new PostingFileElement(file.getPath(), postingFile.size() ));
 			    		System.out.println("added - " + postingFile.get(postingFile.size()-1).path + "in index: "+postingFile.get(postingFile.size()-1).docNum);
-			    		parseFile(file);
+			    		parseFile(file, postingFile.size()-1);
 			    		
 			    	// if it's not the first file we index
 			    	}else{
 			    		boolean exists = false;
-			    		// check if we indexed this file path before
+			    		// check if we indexed this file-path before
 			    		for (int i=0; i<postingFile.size(); i++){
 			    			// if file path exist
 					    	if (postingFile.get(i).path.equals(file.getPath()) ){
@@ -49,11 +53,19 @@ public class FolderScanner implements Runnable{
 					    		break;
 					    	}
 			    		}
-			    		// if file exist -> Add file to list
+			    		// if file-path don't exist -> Add file to list
 			    		if (!exists){
 			    			postingFile.add(new PostingFileElement(file.getPath(), postingFile.size() ));
 				    		System.out.println("added - " + postingFile.get(postingFile.size()-1).path + "in index: "+postingFile.get(postingFile.size()-1).docNum);
-				    		parseFile(file);
+				    		
+				    		//for create 'LocationOrder' list
+				    		parseFile(file, postingFile.size()-1);
+				    		
+				    		//for create 'AlphabeticOrder' list
+				    		sort();
+				    		
+				    		//for create 'db'
+				    		weight();
 			    		}
 			    		
 			    		
@@ -68,6 +80,8 @@ public class FolderScanner implements Runnable{
 				    		}			    		
 				    		
 				    	}
+				    	
+				    	
 			    	}
 			    }
 			}
@@ -78,7 +92,16 @@ public class FolderScanner implements Runnable{
 	}
 
 
-	private void parseFile(File file) {
+	
+
+
+	
+
+
+
+
+
+	private void parseFile(File file, int fileIndex) {
 		String everything=null;
 		String words[];
 		try(BufferedReader br = new BufferedReader(new FileReader(file.getPath()))) {
@@ -99,13 +122,27 @@ public class FolderScanner implements Runnable{
 			e.printStackTrace();
 		}
 		
-		everything = everything.replaceAll("[!@#$%^&*\\[\\]\"()-=_+~:;<>?,.{}`|/]","");
+		everything = everything.replaceAll("[!@#$%^&*\\[\\]\"()/\\-=_+~:;<>?,.{}`|/]","");
 		words = everything.split(" "); //  ofir   is student   - ofir , is 
+		
+		// delete all spaces and put in 'LocationOrder' list
 		for(String tmpWord : words){
 			tmpWord.trim();
-			System.out.println(tmpWord);
+			if (!tmpWord.equals("") && !tmpWord.equals("\\")){
+				LocationOrder.add(new LocationOrderElement(tmpWord, fileIndex));
+				System.out.println("LocationOrder= "+tmpWord);
+			}
 		}
-
+	}
+	
+	private void sort() {
+		// TODO Auto-generated method stub
+		
+	}
+	
+	private void weight() {
+		// TODO Auto-generated method stub
+		
 	}
 }
 
